@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gouki - Junior UI/UX Designer</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-sans { font-family: 'Inter', sans-serif; }
+        
+        .marquee-container {
+          overflow: hidden;
+          white-space: nowrap;
+        }
+        
+        .marquee-content {
+          display: inline-block;
+          animation: marquee 20s linear infinite;
+        }
+        
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050507; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ffb400; 
+        }
+        
+        /* Markdown Styles */
+        .prose strong { color: #ffb400; font-weight: 600; }
+        .prose ul { list-style-type: disc; padding-left: 1.5em; margin-top: 0.5em; margin-bottom: 0.5em; }
+        .prose h3 { font-size: 1.25em; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; color: white; }
+        .prose p { margin-bottom: 0.5em; }
+        
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Hide scrollbar for slider but keep functionality */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Scroll Animation Classes */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            will-change: opacity, visibility;
+        }
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: none;
+        }
+        
+        /* Nav link active state */
+        .nav-link.active {
+            color: #ffb400;
+        }
+    </style>
+</head>
+<body class="bg-[#050507] min-h-screen text-white font-sans selection:bg-[#ffb400] selection:text-black overflow-x-hidden">
+
+    <div id="projectModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+        <div class="bg-[#121216] border border-gray-800 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden relative max-h-[90vh]">
+            <button onclick="closeProjectModal()" class="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-[#ffb400] rounded-full text-white hover:text-black transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+
+            <div class="w-full md:w-1/2 h-64 md:h-auto relative overflow-hidden bg-gray-900">
+                <img id="modalImage" src="" alt="Project Image" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-[#121216] to-transparent opacity-60 md:opacity-30"></div>
+            </div>
+
+            <div class="w-full md:w-1/2 p-8 md:p-10 flex flex-col overflow-y-auto custom-scrollbar">
+                <span id="modalCategory" class="text-[#ffb400] text-xs font-bold tracking-widest uppercase mb-2"></span>
+                <h2 id="modalTitle" class="text-3xl md:text-4xl font-serif font-bold text-white mb-6"></h2>
+                
+                <div class="space-y-6 flex-1">
+                    <div>
+                        <h4 class="text-gray-500 text-sm font-bold mb-2 uppercase">About Project</h4>
+                        <p id="modalDescription" class="text-gray-300 leading-relaxed text-sm md:text-base"></p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="text-gray-500 text-sm font-bold mb-1 uppercase">My Role</h4>
+                            <p id="modalRole" class="text-white text-sm"></p>
+                        </div>
+                        <div>
+                            <h4 class="text-gray-500 text-sm font-bold mb-1 uppercase">Tools</h4>
+                            <p id="modalTools" class="text-white text-sm"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-8 border-t border-gray-800">
+                    <a id="modalLink" href="#" target="_blank" rel="noopener noreferrer" class="w-full bg-white text-black font-bold py-4 rounded-xl hover:bg-[#ffb400] transition-colors flex justify-center items-center gap-2 group">
+                        <span>Visit Live Project</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="aiModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-[#121216] border border-[#ffb400]/30 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden relative">
+            
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-[#050507]">
+                <h3 class="text-2xl font-serif font-bold text-white flex items-center gap-2">
+                    <span class="text-[#ffb400]">✨</span> Brainstorm with AI
+                </h3>
+                <button onclick="closeAiModal()" class="p-2 hover:bg-gray-800 rounded-full transition-colors text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
+                <div id="aiInputSection" class="space-y-4">
+                    <p class="text-gray-300">Got a rough idea? Tell me about it, and I'll generate a project concept, core features, and a vibe check.</p>
+                    <textarea id="aiInput" class="w-full bg-[#050507] border border-gray-700 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ffb400] transition-colors resize-none h-32" placeholder="e.g., I want to build a dating app for dog owners..." oninput="checkInput()"></textarea>
+                </div>
+
+                <div id="aiLoadingSection" class="hidden flex flex-col items-center justify-center py-12 space-y-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin text-[#ffb400]"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                    <p class="text-gray-400 animate-pulse">Cooking up some ideas...</p>
+                </div>
+
+                <div id="aiResultSection" class="hidden space-y-4">
+                    <div id="aiResultContent" class="prose prose-invert max-w-none text-gray-300 text-sm md:text-base leading-relaxed"></div>
+                    <div class="pt-4 flex gap-3">
+                        <button onclick="resetAiModal()" class="text-sm text-gray-400 hover:text-white underline decoration-dotted">
+                            Start Over
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="aiFooterSection" class="p-6 border-t border-gray-800 bg-[#050507]">
+                <button id="generateBtn" onclick="handleGenerate()" disabled class="w-full bg-[#ffb400] text-black font-bold py-3 rounded-full hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2">
+                    Generate Concept ✨
+                </button>
+            </div>
+
+            <div id="aiCopySection" class="hidden p-6 border-t border-gray-800 bg-[#050507]">
+                <button onclick="copyAiResult()" class="w-full border border-[#ffb400] text-[#ffb400] font-bold py-3 rounded-full hover:bg-[#ffb400] hover:text-black transition-colors flex justify-center items-center gap-2">
+                    Copy & Send Email
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 bg-transparent py-6">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div class="text-[#ffb400] font-serif text-2xl font-bold tracking-wide relative z-50">Gouki</div>
+            
+            <div class="hidden md:flex space-x-8 text-sm font-medium text-gray-300">
+                <a href="#home" class="nav-link transition-colors duration-300 hover:text-[#ffb400]">Home</a>
+                <a href="#about" class="nav-link transition-colors duration-300 hover:text-[#ffb400]">About</a>
+                <a href="#projects" class="nav-link transition-colors duration-300 hover:text-[#ffb400]">Portfolio</a>
+                <a href="#skills" class="nav-link transition-colors duration-300 hover:text-[#ffb400]">Skills</a>
+                <a href="#contact" class="nav-link transition-colors duration-300 hover:text-[#ffb400]">Contact</a>
+            </div>
+
+            <div class="md:hidden z-50">
+                <button onclick="toggleMobileMenu()" class="text-white hover:text-[#ffb400] transition-colors" id="menuBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="iconMenu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="iconClose" class="hidden"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+
+            <div id="mobileMenu" class="fixed inset-0 bg-[#050507] z-40 flex flex-col items-center justify-center space-y-8 transition-transform duration-300 ease-in-out md:hidden translate-x-full">
+                <a href="#home" class="mobile-nav-link block text-2xl py-2 hover:text-[#ffb400] transition-colors" onclick="toggleMobileMenu()">Home</a>
+                <a href="#about" class="mobile-nav-link block text-2xl py-2 hover:text-[#ffb400] transition-colors" onclick="toggleMobileMenu()">About</a>
+                <a href="#projects" class="mobile-nav-link block text-2xl py-2 hover:text-[#ffb400] transition-colors" onclick="toggleMobileMenu()">Portfolio</a>
+                <a href="#skills" class="mobile-nav-link block text-2xl py-2 hover:text-[#ffb400] transition-colors" onclick="toggleMobileMenu()">Skills</a>
+                <a href="#contact" class="mobile-nav-link block text-2xl py-2 hover:text-[#ffb400] transition-colors" onclick="toggleMobileMenu()">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <header id="home" class="relative pt-32 pb-20 min-h-screen flex items-center justify-center overflow-hidden">
+        <div class="container mx-auto px-6 relative z-10 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            <div class="md:col-span-3 text-left md:text-right order-2 md:order-1 self-end md:mb-20">
+                <h2 class="text-4xl md:text-5xl font-serif font-bold text-[#ffb400] leading-tight">
+                    Junior<br />UI/UX<br />Designer
+                </h2>
+            </div>
+
+            <div class="md:col-span-6 relative order-1 md:order-2 flex justify-center">
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#ffb400]/20 rounded-full blur-[100px]"></div>
+                
+                <div class="relative z-10">
+                    <img src="1.png" alt="Gouki Portrait" class="w-full max-w-xl mx-auto object-cover rounded-xl shadow-2xl brightness-90 contrast-110" style="mask-image: linear-gradient(to bottom, black 80%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);" />
+                </div>
+                
+                <div class="absolute top-10 -right-20 z-20 text-left">
+                    <p class="text-white text-lg font-light">Hello</p>
+                    <h1 class="text-4xl md:text-5xl font-serif font-bold text-[#ffb400]">I'M Gouki</h1>
+                </div>
+            </div>
+
+            <div class="md:col-span-3 flex flex-col items-start order-3 md:order-3 self-end md:mb-20">
+                <a href="#contact" class="group flex items-center space-x-2 text-white hover:text-[#ffb400] transition-colors cursor-pointer">
+                    <span class="text-lg font-medium">Start A Project</span>
+                    <div class="p-2 border border-gray-600 rounded-full group-hover:border-[#ffb400] transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transform group-hover:translate-y-1 transition-transform"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section id="about" class="py-20 relative fade-in-section">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-serif font-bold text-[#ffb400] text-center mb-16">ABOUT</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="relative group">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-[#ffb400] to-orange-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                    <img src="2.png" alt="About Gouki" class="relative w-full max-w-sm mx-auto object-cover rounded-lg grayscale hover:grayscale-0 transition-all duration-500" />
+                </div>
+                
+                <div class="space-y-6 text-gray-300 font-light leading-relaxed text-sm md:text-base">
+                    <p>
+                        <span class="text-[#ffb400] font-medium">Hello, I'm Gouki.</span> For me, design isn't just about making things look good; it's about making them feel right. I'm a Junior UI/UX Designer driven by a passion for understanding user needs and translating them into meaningful and clean digital experiences.
+                    </p>
+                    <p>
+                        I believe the best designs come from a place of empathy. My process often starts with user research, moves through sketching and wireframing, and comes to life in interactive prototypes in Figma. I enjoy every step of turning a complex problem into a simple, elegant solution.
+                    </p>
+                    <p>
+                        As a designer, I'm constantly learning and exploring new ways to create seamless user journeys. I'm excited to bring my skills and passion to a team that values clean design and user-centered thinking.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="py-20 bg-[#08080c] overflow-hidden fade-in-section">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-between items-end mb-12">
+                <h2 class="text-4xl font-serif font-bold text-[#ffb400] mx-auto md:mx-0">PROJECTS</h2>
+                <div class="hidden md:flex space-x-4">
+                    <button onclick="scrollProjects('left')" class="p-3 border border-gray-700 rounded-full hover:border-[#ffb400] hover:text-[#ffb400] transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    </button>
+                    <button onclick="scrollProjects('right')" class="p-3 border border-gray-700 rounded-full hover:border-[#ffb400] hover:text-[#ffb400] transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="projectContainer" class="flex space-x-8 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0">
+                <div onclick="openProjectModal(1)" class="min-w-[85vw] md:min-w-[600px] snap-center group relative bg-[#121216] rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 border border-gray-800 hover:border-gray-700 cursor-pointer">
+                    <div class="h-64 bg-gradient-to-br from-gray-800 to-black rounded-xl mb-6 overflow-hidden flex items-center justify-center relative">
+                        <img src="3.jpg" class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" alt="Website View" />
+                        <div class="absolute inset-0 bg-black/40"></div>
+                        <img src="" class="hidden absolute w-32 h-32 rotate-[-10deg] object-contain shadow-2xl rounded-lg group-hover:rotate-0 group-hover:translate-y-0 transition-transform duration-500" alt="Mockup" onerror="this.style.display='none'" />
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h3 class="text-3xl font-serif font-bold text-gray-200 group-hover:text-white mb-1">Aura Real Estate</h3>
+                            <p class="text-gray-500 text-sm">Website View</p>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#ffb400] opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 group-hover:-rotate-[60deg] transition-all duration-300"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </div>
+                </div>
+
+                <div onclick="openProjectModal(2)" class="min-w-[85vw] md:min-w-[600px] snap-center group relative bg-[#121216] rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 border border-gray-800 hover:border-gray-700 cursor-pointer">
+                    <div class="h-64 bg-gradient-to-br from-gray-800 to-black rounded-xl mb-6 overflow-hidden flex items-center justify-center relative">
+                        <img src="4.jpg" class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" alt="Mobile View" />
+                        <div class="absolute inset-0 bg-black/40"></div>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h3 class="text-3xl font-serif font-bold text-gray-200 group-hover:text-white mb-1">Aura Real Estate</h3>
+                            <p class="text-gray-500 text-sm">Mobile View</p>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#ffb400] opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 group-hover:-rotate-[60deg] transition-all duration-300"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </div>
+                </div>
+
+                <div onclick="openProjectModal(3)" class="min-w-[85vw] md:min-w-[600px] snap-center group relative bg-[#121216] rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 border border-gray-800 hover:border-gray-700 cursor-pointer">
+                    <div class="h-64 bg-gradient-to-br from-purple-900 to-black rounded-xl mb-6 overflow-hidden flex items-center justify-center relative">
+                        <img src="Geometric Dynamic Logo.png" class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" alt="Branding" />
+                        <div class="absolute inset-0 bg-black/40"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-4xl font-serif font-bold text-white tracking-widest border-2 border-white/30 px-6 py-2 rounded">WINGS</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h3 class="text-3xl font-serif font-bold text-gray-200 group-hover:text-white mb-1">Wings Agency</h3>
+                            <p class="text-gray-500 text-sm">Branding</p>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#ffb400] opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 group-hover:-rotate-[60deg] transition-all duration-300"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="skills" class="py-24 relative overflow-hidden fade-in-section">
+        <div class="absolute top-1/2 right-0 -translate-y-1/2 w-[500px] h-[500px] bg-[#ffb400]/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                <div>
+                    <h2 class="text-5xl md:text-6xl font-serif font-bold text-white mb-4">
+                        My <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#ffb400] to-orange-500">Arsenal</span>
+                    </h2>
+                    <p class="text-gray-400 max-w-md">The tools and technologies I use to bring imagination to life.</p>
+                </div>
+                <div class="hidden md:block h-px flex-1 bg-gradient-to-r from-gray-800 to-transparent ml-12 mb-4"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="skillsContainer">
+                </div>
+        </div>
+    </section>
+
+    <div class="py-4 bg-[#ffb400] -rotate-1 scale-105 transform origin-left md:my-10 border-y-4 border-black">
+        <div class="marquee-container overflow-hidden">
+            <div class="marquee-content font-bold text-black text-lg uppercase tracking-wider flex items-center space-x-12">
+                <span>★ Open For Work</span><span>★ Let's Collab</span><span>★ UI/UX Design</span>
+                <span>★ Open For Work</span><span>★ Let's Collab</span><span>★ UI/UX Design</span>
+                <span>★ Open For Work</span><span>★ Let's Collab</span><span>★ UI/UX Design</span>
+                <span>★ Open For Work</span><span>★ Let's Collab</span><span>★ UI/UX Design</span>
+                <span>★ Open For Work</span><span>★ Let's Collab</span><span>★ UI/UX Design</span>
+                <span>★ Open For Work</span><span>★ Let's Collab</span><span>★ UI/UX Design</span>
+            </div>
+        </div>
+    </div>
+
+    <footer id="contact" class="pt-20 pb-10 relative overflow-hidden fade-in-section">
+        <div class="container mx-auto px-6 relative z-10">
+            <h2 class="text-5xl md:text-7xl font-serif font-bold text-[#ffb400] mb-8 leading-tight">
+                LET'S<br />COOK<br />SOMETHING.
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-12">
+                <div class="space-y-8">
+                    <p class="text-gray-400 max-w-sm">
+                        Got a crazy idea? I'm down. Whether it's a website makeover or a brand new app, let's make it look sick.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="mailto:https://mail.google.com/mail/u/1/#inbox/FMfcgzQfBsmNbNDGnrVkcmXnDRDqMVjx?compose=new" class="group bg-white text-black px-8 py-3 rounded-full font-bold flex items-center justify-center space-x-2 hover:bg-[#ffb400] transition-colors">
+                            <span>Shoot Me An Email</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transform rotate-45 transition-all duration-300 group-hover:rotate-0 group-hover:translate-x-1 group-hover:-translate-y-1"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                        </a>
+                        
+                        <button onclick="openAiModal()" class="bg-[#1a1a1f] border border-[#ffb400] text-[#ffb400] px-8 py-3 rounded-full font-bold flex items-center justify-center space-x-2 hover:bg-[#ffb400] hover:text-black transition-all shadow-[0_0_15px_rgba(255,180,0,0.2)] hover:shadow-[0_0_25px_rgba(255,180,0,0.4)]">
+                            <span>Brainstorm with AI</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 5H5"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col space-y-4 md:items-end">
+                    <a href="https://www.instagram.com/dinaogouki?igsh=MXU1NXE0eDA5OW9ubw==" class="flex items-center justify-between w-full md:w-64 p-4 bg-[#121216] border border-gray-800 rounded-lg hover:border-[#ffb400] group transition-all">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-gray-800 p-2 rounded-full group-hover:bg-[#ffb400] group-hover:text-black transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm">Instagram</p>
+                                <p class="text-xs text-gray-500">@gouki.design</p>
+                            </div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 group-hover:text-[#ffb400] transition-transform duration-300 group-hover:-rotate-[60deg]"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </a>
+
+                    <a href="https://www.linkedin.com/in/htet-myat-99811a3a3?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app " class="flex items-center justify-between w-full md:w-64 p-4 bg-[#121216] border border-gray-800 rounded-lg hover:border-[#ffb400] group transition-all">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-gray-800 p-2 rounded-full group-hover:bg-[#ffb400] group-hover:text-black transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm">LinkedIn</p>
+                                <p class="text-xs text-gray-500">/in/gouki</p>
+                            </div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 group-hover:text-[#ffb400] transition-transform duration-300 group-hover:-rotate-[60deg]"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </a>
+
+                    <a href="#" class="flex items-center justify-between w-full md:w-64 p-4 bg-[#121216] border border-gray-800 rounded-lg hover:border-[#ffb400] group transition-all">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-gray-800 p-2 rounded-full group-hover:bg-[#ffb400] group-hover:text-black transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M19.13 5.09C15.22 9.14 10 10.44 2.25 10.94"/><path d="M21.75 12.84c-6.62-1.41-12.14 1-16.38 6.32"/><path d="M8.56 2.75c4.37 6 6 9.42 8 13.23"/></svg>
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm">Dribbble</p>
+                                <p class="text-xs text-gray-500">@gouki</p>
+                            </div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 group-hover:text-[#ffb400] transition-transform duration-300 group-hover:-rotate-[60deg]"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-20 border-t border-gray-900 relative flex flex-col items-center justify-center h-[40vh] overflow-hidden">
+            <h1 class="text-[18vw] leading-none font-black text-[#121216] select-none pointer-events-none absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full text-center">
+                GOUKI
+            </h1>
+            <div class="flex-1"></div>
+            <p class="text-gray-600 text-xs pb-8 relative z-10">© 2026 Gouki Design. All rights reserved.</p>
+        </div>
+    </footer>
+
+
+    <script>
+        // --- 1. State & Data ---
+        const projectsData = [
+            {
+                id: 1,
+                title: "Aura Real Estate",
+                category: "Website View",
+                image: "3.jpg",
+                description: "A luxury real estate platform designed to connect high-end buyers with premium properties. The focus was on creating an immersive visual experience with seamless navigation.",
+                role: "UI/UX Design, Frontend Dev",
+                tools: "Figma",
+                link: "https://www.figma.com/proto/gBHrwJxQIJzzFy1iCgE4PI/real-estate?node-id=129-30&p=f&t=qp9N8S3p5vGBqyEx-1&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=129%3A30"
+            },
+            {
+                id: 2,
+                title: "Aura Real Estate",
+                category: "Mobile View",
+                image: "4.jpg",
+                description: "The mobile adaptation of Aura Real Estate, ensuring a responsive and touch-friendly experience for users on the go. Optimized for speed and usability.",
+                role: "Mobile App Design",
+                tools: "Figma",
+                link: "https://www.figma.com/proto/gBHrwJxQIJzzFy1iCgE4PI/real-estate?node-id=490-3097&p=f&t=UpsW0nzLt6SpSgNr-1&scaling=scale-down&content-scaling=fixed&page-id=1%3A4&starting-point-node-id=490%3A3097"
+            },
+            {
+                id: 3,
+                title: "Wings Agency",
+                category: "Branding",
+                image: "Geometric Dynamic Logo.png",
+                description: "Complete brand identity design for Wings Agency, a creative marketing firm. The project included logo design, color theory, and brand guidelines.",
+                role: "Branding, Vibe Coding",
+                tools: "Figma In Thinking and Use Ai",
+                link: "https://hmonov22.github.io/wings-agency/"
+            }
+        ];
+
+        const skillsData = [
+            { name: 'Figma', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z"/><path d="M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z"/><path d="M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z"/><path d="M5 19.5A3.5 3.5 0 0 1 8.5 23H12v-3.5a3.5 3.5 0 1 1-7 0z"/><path d="M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z"/></svg>', level: 90, tag: 'Prototyping & Design', desc: "My main weapon for UI/UX." },
+            { name: 'Web Design', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>', level: 85, tag: 'Layout & Typography', desc: "Crafting digital experiences." },
+            { name: 'Mobile Design', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>', level: 80, tag: 'iOS & Android', desc: "Responsive & adaptive." },
+            { name: 'UI Design', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>', level: 95, tag: 'Visual Systems', desc: "Pixel perfect aesthetics." },
+            { name: 'UX Research', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>', level: 75, tag: 'User Journey', desc: "Understanding the 'Why'." },
+            { name: 'Vibe Coding', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>', level: 70, tag: 'Creative Frontend', desc: "Turning static pixels into living vibes." }
+        ];
+
+        let isMobileMenuOpen = false;
+        const apiKey = "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";
+
+        // --- 2. Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSkills();
+            initScrollObserver();
+            window.addEventListener('scroll', handleScroll);
+        });
+
+        // --- 3. Render Skills ---
+        function renderSkills() {
+            const container = document.getElementById('skillsContainer');
+            let html = '';
+            skillsData.forEach(skill => {
+                html += `
+                    <div class="group relative bg-[#121216] border border-gray-800/50 rounded-2xl p-8 hover:border-[#ffb400]/50 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-[#ffb400]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="p-3 bg-gray-900 rounded-xl text-gray-400 group-hover:text-[#ffb400] group-hover:bg-black transition-colors ring-1 ring-gray-800 group-hover:ring-[#ffb400]/30">
+                                    ${skill.icon}
+                                </div>
+                                <span class="text-4xl font-serif font-bold text-gray-800 group-hover:text-gray-700 transition-colors select-none">${skill.level}%</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-1 group-hover:text-[#ffb400] transition-colors">${skill.name}</h3>
+                            <p class="text-sm text-gray-500 mb-2">${skill.tag}</p>
+                            <p class="text-xs text-gray-600 mb-6 line-clamp-2 group-hover:text-gray-400 transition-colors">${skill.desc}</p>
+                            <div class="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-[#ffb400] to-orange-500 relative" style="width: ${skill.level}%">
+                                    <div class="absolute right-0 top-0 bottom-0 w-2 bg-white/50 blur-[2px]"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- 4. Scroll & Navbar Logic ---
+        function handleScroll() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-[#050507]/90', 'backdrop-blur-md');
+                navbar.classList.remove('bg-transparent');
+            } else {
+                navbar.classList.remove('bg-[#050507]/90', 'backdrop-blur-md');
+                navbar.classList.add('bg-transparent');
+            }
+
+            // Active Section Tracking
+            const sections = ['home', 'about', 'projects', 'skills', 'contact'];
+            const scrollPosition = window.scrollY + 200;
+
+            sections.forEach(sectionId => {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    const { offsetTop, offsetHeight } = element;
+                    if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+                        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                        document.querySelector(`.nav-link[href="#${sectionId}"]`)?.classList.add('active');
+                    }
+                }
+            });
+        }
+
+        function initScrollObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.fade-in-section').forEach(section => observer.observe(section));
+        }
+
+        // --- 5. Mobile Menu Logic ---
+        function toggleMobileMenu() {
+            isMobileMenuOpen = !isMobileMenuOpen;
+            const menu = document.getElementById('mobileMenu');
+            const iconMenu = document.getElementById('iconMenu');
+            const iconClose = document.getElementById('iconClose');
+
+            if (isMobileMenuOpen) {
+                menu.classList.remove('translate-x-full');
+                menu.classList.add('translate-x-0');
+                iconMenu.classList.add('hidden');
+                iconClose.classList.remove('hidden');
+            } else {
+                menu.classList.remove('translate-x-0');
+                menu.classList.add('translate-x-full');
+                iconMenu.classList.remove('hidden');
+                iconClose.classList.add('hidden');
+            }
+        }
+
+        // --- 6. Project Slider & Modal Logic ---
+        function scrollProjects(direction) {
+            const container = document.getElementById('projectContainer');
+            const scrollAmount = direction === 'left' ? -400 : 400;
+            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+
+        function openProjectModal(id) {
+            const project = projectsData.find(p => p.id === id);
+            if (!project) return;
+
+            document.getElementById('modalImage').src = project.image;
+            document.getElementById('modalCategory').textContent = project.category;
+            document.getElementById('modalTitle').textContent = project.title;
+            document.getElementById('modalDescription').textContent = project.description;
+            document.getElementById('modalRole').textContent = project.role;
+            document.getElementById('modalTools').textContent = project.tools;
+            document.getElementById('modalLink').href = project.link;
+
+            document.getElementById('projectModal').classList.remove('hidden');
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModal').classList.add('hidden');
+        }
+
+        // --- 7. AI Brainstorm Logic ---
+        function openAiModal() {
+            document.getElementById('aiModal').classList.remove('hidden');
+            checkInput();
+        }
+
+        function closeAiModal() {
+            document.getElementById('aiModal').classList.add('hidden');
+        }
+
+        function checkInput() {
+            const input = document.getElementById('aiInput').value.trim();
+            document.getElementById('generateBtn').disabled = input.length === 0;
+        }
+
+        function resetAiModal() {
+            document.getElementById('aiInput').value = '';
+            document.getElementById('aiInputSection').classList.remove('hidden');
+            document.getElementById('aiResultSection').classList.add('hidden');
+            document.getElementById('aiFooterSection').classList.remove('hidden');
+            document.getElementById('aiCopySection').classList.add('hidden');
+            checkInput();
+        }
+
+        async function handleGenerate() {
+            const input = document.getElementById('aiInput').value.trim();
+            if (!input) return;
+
+            // Show Loader
+            document.getElementById('aiInputSection').classList.add('hidden');
+            document.getElementById('aiFooterSection').classList.add('hidden');
+            document.getElementById('aiLoadingSection').classList.remove('hidden');
+            document.getElementById('aiLoadingSection').classList.add('flex');
+
+            const prompt = `
+                You are a senior Creative Director helping a client refine their project idea.
+                The client says: "${input}"
+                
+                Please provide a structured, professional, yet creative response covering:
+                1. **Project Concept**: A catchy name and a one-sentence elevator pitch.
+                2. **Core Features**: 3-4 key features that would make this MVP stand out.
+                3. **Design Vibe**: Suggested color palette (give hex codes) and typography style.
+                4. **Target Audience**: Who is this for?
+
+                Keep the tone exciting and "cool" like the designer Gouki (who says things like "Let's cook something", "look sick").
+                Format the response in Markdown.
+            `;
+
+            let responseText = "";
+
+            try {
+                if (!apiKey) throw new Error("API Key is missing!");
+
+                if (apiKey.startsWith("sk-or-")) {
+                    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${apiKey}`,
+                            "Content-Type": "application/json",
+                            "HTTP-Referer": window.location.origin,
+                            "X-Title": "Gouki Portfolio",
+                        },
+                        body: JSON.stringify({
+                            "model": "google/gemini-2.0-flash-001",
+                            "messages": [{ "role": "user", "content": prompt }]
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.error) throw new Error(data.error.message);
+                    responseText = data.choices[0].message.content;
+                } else {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    const data = await response.json();
+                    if (data.error) throw new Error(data.error.message);
+                    responseText = data.candidates[0].content.parts[0].text;
+                }
+            } catch (error) {
+                console.error("AI API Error:", error);
+                responseText = "My AI brain is a bit overloaded right now. Try again in a sec!";
+            }
+
+            // Hide Loader, Show Result
+            document.getElementById('aiLoadingSection').classList.add('hidden');
+            document.getElementById('aiLoadingSection').classList.remove('flex');
+            
+            // Using Marked.js to parse Markdown
+            document.getElementById('aiResultContent').innerHTML = marked.parse(responseText);
+            
+            document.getElementById('aiResultSection').classList.remove('hidden');
+            document.getElementById('aiCopySection').classList.remove('hidden');
+        }
+
+        function copyAiResult() {
+            const textToCopy = document.getElementById('aiResultContent').innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("Idea copied to clipboard!");
+            });
+        }
+    </script>
+</body>
+</html>
